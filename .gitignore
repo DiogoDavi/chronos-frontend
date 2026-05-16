@@ -1,0 +1,71 @@
+# ==========================================
+# Dependências
+# ==========================================
+node_modules/
+.pnpm-store/
+
+# ==========================================
+# Configurações e Segurança (Secrets)
+# ==========================================
+.env
+.env.*
+!.env.example
+!.env.template
+token.json
+credentials.json
+
+# ==========================================
+# Build, Cache e Compilação
+# ==========================================
+dist/
+dist-ssr/
+build/
+coverage/
+.vite/
+*.tsbuildinfo
+.eslintcache
+
+# ==========================================
+# Diretórios de Execução e Dados Temporários
+# ==========================================
+downloads/
+logs/
+session-data/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ==========================================
+# Sistema Operacional
+# ==========================================
+.DS_Store
+.DS_Store?
+._*
+.Trashes
+Thumbs.db
+ehthumbs.db
+
+# ==========================================
+# IDE e Editores
+# ==========================================
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ==========================================
+# Projeto Específico
+# ==========================================
+.vercel/
+metadata.json
+
+# SQLite (se usado localmente)
+*.db
+*.db-journal
+*.sqlite
+.vercel
