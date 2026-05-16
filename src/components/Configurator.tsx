@@ -65,7 +65,7 @@ export const Configurator: React.FC<ConfiguratorProps> = ({
     }
   }, [selectedUnit, premises]);
 
-  const units: Unit[] = ['JPA', 'CPG', 'NAT', 'MSR', 'CPV', 'REC', 'MCZ', 'AJU', 'VIX', 'FOR', 'SLZ', 'THE'];
+  const units: Unit[] = ['JPA', 'CPG', 'NAT', 'MSR'];
   const daysOfWeekFull = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
 
   const toggleDay = (dayIndex: number) => {
