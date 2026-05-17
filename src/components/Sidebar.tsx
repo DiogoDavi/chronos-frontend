@@ -119,7 +119,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {isSidebarExpanded && (
           <button
             onClick={() => setIsSidebarPinned(!isSidebarPinned)}
-            className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all ${isSidebarPinned ? 'text-white bg-[#a20014] shadow-lg shadow-red-900/40' : 'text-zinc-500 hover:text-white hover:bg-white/5'}`}
+            className={`w-8 h-8 flex items-center justify-center rounded-lg border transition-all ${
+              isSidebarPinned 
+                ? 'text-[#ff4a5a] bg-[#a20014]/15 border-[#a20014]/30 hover:bg-[#a20014]/25 shadow-md shadow-red-950/20' 
+                : 'text-zinc-500 border-transparent hover:text-white hover:bg-white/5'
+            }`}
           >
             <Pin size={14} className={isSidebarPinned ? 'rotate-45' : ''} />
           </button>
@@ -150,7 +154,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
           isCollapsed={!isSidebarExpanded}
         />
 
-        <div className="mt-2">
+        <div 
+          className="mt-2"
+          onMouseEnter={() => isSidebarExpanded && setIsFiltersOpen(true)}
+          onMouseLeave={() => isSidebarExpanded && setIsFiltersOpen(false)}
+        >
           <button
             onClick={() => isSidebarExpanded && setIsFiltersOpen(!isFiltersOpen)}
             className={`w-full flex items-center ${isSidebarExpanded ? 'justify-between px-4' : 'justify-center'} h-12 rounded-xl hover:bg-white/5 transition-all group`}
