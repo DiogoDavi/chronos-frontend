@@ -35,20 +35,25 @@ export const SessionStatus = ({ theme }: Props) => {
 
     const checkStatus = useCallback(async () => {
         try {
+            console.log("🔄 [POLLING] Consultando status do Supabase no backend...");
             const res = await fetch(`${apiUrl}/api/session/status`);
             const data = await res.json();
+            
+            console.log("📥 [POLLING] Resposta do backend - Status:", data.status, "MFA:", data.mfaCode, "Erro anterior:", data.lastError);
 
             // Evita condição de corrida: se clicamos em Conectar nos últimos 30 segundos,
             // ignoramos o status 'expired' vindo do banco porque o Puppeteer ainda está iniciando.
             const isRecentlyConnecting = loginTimestampRef.current !== 0 && (Date.now() - loginTimestampRef.current < 30000);
             
             if (data.status === 'expired' && isRecentlyConnecting) {
+                console.log("⚠️ [POLLING] Status 'expired' ignorado temporariamente devido à trava de conexão recente.");
                 setSession(s => ({ ...s, status: 'pending' }));
                 return;
             }
 
             if (['pending', 'mfa_required', 'active'].includes(data.status)) {
                 // O Reader já iniciou e respondeu ou terminou. Podemos liberar a trava de tempo.
+                console.log("🔓 [POLLING] Status ativo/pendente detectado no banco. Liberando trava de tempo.");
                 loginTimestampRef.current = 0;
             }
 
@@ -59,7 +64,8 @@ export const SessionStatus = ({ theme }: Props) => {
                 lastSync: data.lastSync || null,
                 lastError: data.lastError || null
             });
-        } catch {
+        } catch (err: any) {
+            console.error("❌ [POLLING] Erro de rede ou parsing ao consultar status:", err.message);
             const isRecentlyConnecting = loginTimestampRef.current !== 0 && (Date.now() - loginTimestampRef.current < 30000);
             if (!isRecentlyConnecting) {
                 setSession(s => ({ ...s, status: 'expired' }));
@@ -83,12 +89,14 @@ export const SessionStatus = ({ theme }: Props) => {
     // Resetar estado de "sending" se o status voltar para expired (erro no backend)
     useEffect(() => {
         if (session.status === 'expired' && sending) {
+            console.log("🔄 [EFEITO] Status voltou para expired com o envio ativo. Resetando estado 'sending' para false.");
             setSending(false);
         }
     }, [session.status, sending]);
 
     useEffect(() => {
         if (session.status === 'active' && showModal) {
+            console.log("🔄 [EFEITO] Conexão ativa detectada com sucesso! Fechando o modal automaticamente.");
             setShowModal(false);
             setSending(false);
         }
@@ -98,7 +106,12 @@ export const SessionStatus = ({ theme }: Props) => {
     const handleConectar = async (e?: React.FormEvent) => {
         if (e) e.preventDefault();
         
+        console.log('🔥 [STEP 1] BOTÃO CONECTAR CLICADO');
+        console.log('📧 Email Microsoft:', email);
+        console.log('🔗 URL base da API configurada:', apiUrl);
+        
         if (!email || !password) {
+            console.warn('⚠️ [STEP 1] Preenchimento incompleto: email ou senha ausentes.');
             setError('Preencha email e senha');
             return;
         }
@@ -107,9 +120,12 @@ export const SessionStatus = ({ theme }: Props) => {
         setSending(true);
         setError('');
 
+        const targetUrl = `${apiUrl}/api/romaneios/reconnect`;
+        console.log('📤 [STEP 2] Disparando POST para:', targetUrl);
+
         try {
             const res = await fetch(
-                `${apiUrl}/api/romaneios/reconnect`,
+                targetUrl,
                 {
                     method: 'POST',
                     headers: {
@@ -122,22 +138,27 @@ export const SessionStatus = ({ theme }: Props) => {
                 }
             );
 
+            console.log('📥 [STEP 2] Resposta HTTP recebida. Status:', res.status);
             const data = await res.json();
 
             if (!res.ok || !data.success) {
+                console.error('❌ [STEP 2] Backend rejeitou requisição ou retornou erro:', data);
                 setError(data.error || 'Erro ao conectar');
                 loginTimestampRef.current = 0;
                 setSending(false);
                 return;
             }
 
+            console.log('✅ [STEP 2] Comando de reconexão aceito com sucesso pelo backend:', data);
+
             // NÃO FECHA O MODAL AQUI IMEDIATAMENTE para evitar flash
             // Limpamos apenas a senha por segurança.
             setPassword('');
             setSession(s => ({ ...s, status: 'pending' }));
 
-        } catch {
-            setError('Erro de conexão com o servidor');
+        } catch (err: any) {
+            console.error('❌ [STEP 2] Exceção na chamada de reconexão:', err);
+            setError('Erro de conexão com o servidor: ' + err.message);
             loginTimestampRef.current = 0;
             setSending(false);
         }
